@@ -1,0 +1,131 @@
+<?php
+include "../core/autoload.php";
+include "../core/app/model/BoxData.php";
+include "../core/app/model/SellData.php";
+include "../core/app/model/PersonData.php";
+include "../core/app/model/OperationData.php";
+include "../core/app/model/ProductData.php";
+include "../core/app/model/SpendData.php";
+
+include "../vendor/autoload.php";
+
+use PhpOffice\PhpWord\Autoloader;
+use PhpOffice\PhpWord\Settings;
+
+//Autoloader::register();
+
+$word = new  PhpOffice\PhpWord\PhpWord();
+$clients = PersonData::getClients();
+
+
+$section1 = $word->AddSection();
+$section1->addText("CORTE DE CAJA #".$_GET["id"],array("size"=>22,"bold"=>true,"align"=>"right"));
+
+$sells = SellData::getByBoxId($_GET["id"]);
+$res = SellData::getResByBoxId($_GET["id"]);
+$spends = SpendData::getSpendsByBoxId($_GET["id"]);
+$deps = SpendData::getDepsByBoxId($_GET["id"]);
+$styleTable = array('borderSize' => 6, 'borderColor' => '888888', 'cellMargin' => 40);
+$styleFirstRow = array('borderBottomColor' => '0000FF', 'bgColor' => 'AAAAAA');
+
+/////////////////////////////////////////////////
+$section1->addText("VENTAS",array("size"=>16,"bold"=>true,"align"=>"right"));
+$table1 = $section1->addTable("table1");
+$table1->addRow();
+$table1->addCell()->addText("Id");
+$table1->addCell()->addText("Total");
+$table1->addCell()->addText("Fecha");
+$total_total = 0;
+foreach($sells as $sell){
+	$total=0;
+$operations = OperationData::getAllProductsBySellId($sell->id);
+	foreach($operations as $operation){
+		$product  = $operation->getProduct();
+		$total += $operation->q*$product->price_out;
+	}
+	$total_total +=$total;
+
+$table1->addRow();
+$table1->addCell(2500)->addText($sell->id);
+$table1->addCell(5000)->addText("$ ".number_format($total,2,".",","));
+$table1->addCell(2500)->addText($sell->created_at);
+}
+$section1->addText("Total: $".number_format($total_total,2,".",","),array("size"=>22));
+$word->addTableStyle('table1', $styleTable,$styleFirstRow);
+//////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////
+$section1->addText("COMPRAS",array("size"=>16,"bold"=>true,"align"=>"right"));
+$table1 = $section1->addTable("table1");
+$table1->addRow();
+$table1->addCell()->addText("Id");
+$table1->addCell()->addText("Total");
+$table1->addCell()->addText("Fecha");
+$total_total = 0;
+foreach($res as $sell){
+	$total=0;
+$operations = OperationData::getAllProductsBySellId($sell->id);
+	foreach($operations as $operation){
+		$product  = $operation->getProduct();
+		$total += $operation->q*$product->price_in;
+	}
+	$total_total +=$total;
+
+$table1->addRow();
+$table1->addCell(2500)->addText($sell->id);
+$table1->addCell(5000)->addText("$ ".number_format($total,2,".",","));
+$table1->addCell(2500)->addText($sell->created_at);
+}
+$section1->addText("Total: $".number_format($total_total,2,".",","),array("size"=>22));
+$word->addTableStyle('table1', $styleTable,$styleFirstRow);
+//////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////
+$section1->addText("GASTOS",array("size"=>16,"bold"=>true,"align"=>"right"));
+$table1 = $section1->addTable("table1");
+$table1->addRow();
+$table1->addCell()->addText("Id");
+$table1->addCell()->addText("Total");
+$table1->addCell()->addText("Fecha");
+$total_total = 0;
+foreach($spends as $sell){
+	$total=$sell->price;
+	$total_total +=$total;
+
+$table1->addRow();
+$table1->addCell(2500)->addText($sell->id);
+$table1->addCell(5000)->addText("$ ".number_format($total,2,".",","));
+$table1->addCell(2500)->addText($sell->created_at);
+}
+$section1->addText("Total: $".number_format($total_total,2,".",","),array("size"=>22));
+$word->addTableStyle('table1', $styleTable,$styleFirstRow);
+//////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////
+$section1->addText("DEPOSITOS",array("size"=>16,"bold"=>true,"align"=>"right"));
+$table1 = $section1->addTable("table1");
+$table1->addRow();
+$table1->addCell()->addText("Id");
+$table1->addCell()->addText("Total");
+$table1->addCell()->addText("Fecha");
+$total_total = 0;
+foreach($deps as $sell){
+	$total=$sell->price;
+	$total_total +=$total;
+
+$table1->addRow();
+$table1->addCell(2500)->addText($sell->id);
+$table1->addCell(5000)->addText("$ ".number_format($total,2,".",","));
+$table1->addCell(2500)->addText($sell->created_at);
+}
+$section1->addText("Total: $".number_format($total_total,2,".",","),array("size"=>22));
+$word->addTableStyle('table1', $styleTable,$styleFirstRow);
+//////////////////////////////////////////////////////////////////////////////////////
+$filename = "box-".time().".docx";
+#$word->setReadDataOnly(true);
+$word->save($filename,"Word2007");
+//chmod($filename,0444);
+header("Content-Disposition: attachment; filename=$filename");
+readfile($filename); // or echo file_get_contents($filename);
+unlink($filename);  // remove temp file
+
+
+
+?>

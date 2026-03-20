@@ -52,12 +52,11 @@ class StockData {
 	}
 
 	public static function getPrincipal(){
-			
-		if(Core::$user->kind==2 || Core::$user->kind==3|| Core::$user->kind==4){
+		// Verificar que el usuario existe antes de acceder a sus propiedades
+		if(Core::$user != null && (Core::$user->kind==2 || Core::$user->kind==3 || Core::$user->kind==4)){
 			$sql = "select * from ".self::$tablename." where id=".Core::$user->stock_id;
 			$query = Executor::doit($sql);
 			return Model::one($query[0],new StockData());
-
 		}else{
 			$sql = "select * from ".self::$tablename." where is_principal=1";
 			$query = Executor::doit($sql);

@@ -24,44 +24,53 @@ class OperationTypeData {
 
 
 	public static function getById($id){
-		 $sql = "select * from ".self::$tablename." where id=$id";
+		$sql = "select * from ".self::$tablename." where id=$id";
 		$query = Executor::doit($sql);
 		$found = null;
 		$data = new OperationTypeData();
-		while($r = $query[0]->fetch_array()){
-			$data->id = $r['id'];
-			$data->name = $r['name'];
-			$found = $data;
-			break;
+		// Verificar que el query sea valido antes de iterar
+		if($query[0] && !is_bool($query[0])){
+			while($r = $query[0]->fetch_array()){
+				$data->id = $r['id'];
+				$data->name = $r['name'];
+				$found = $data;
+				break;
+			}
 		}
 		return $found;
 	}
 
 	public static function getByName($name){
-		 $sql = "select * from ".self::$tablename." where name=\"$name\"";
+		$sql = "select * from ".self::$tablename." where name=\"$name\"";
 		$query = Executor::doit($sql);
 		$found = null;
 		$data = new OperationTypeData();
-		while($r = $query[0]->fetch_array()){
-			$data->id = $r['id'];
-			$data->name = $r['name'];
-			$found = $data;
-			break;
+		// Verificar que el query sea valido antes de iterar
+		if($query[0] && !is_bool($query[0])){
+			while($r = $query[0]->fetch_array()){
+				$data->id = $r['id'];
+				$data->name = $r['name'];
+				$found = $data;
+				break;
+			}
 		}
 		return $found;
 	}
 
 
 	public static function getAll(){
-		$sql = "select * from ".self::$tablename." order by created_at desc";
+		$sql = "select * from ".self::$tablename." order by id asc";
 		$query = Executor::doit($sql);
 		$array = array();
 		$cnt = 0;
-		while($r = $query[0]->fetch_array()){
-			$array[$cnt] = new OperationTypeData();
-			$array[$cnt]->id = $r['id'];
-			$array[$cnt]->name = $r['name'];
-			$cnt++;
+		// Verificar que el query sea valido antes de iterar
+		if($query[0] && !is_bool($query[0])){
+			while($r = $query[0]->fetch_array()){
+				$array[$cnt] = new OperationTypeData();
+				$array[$cnt]->id = $r['id'];
+				$array[$cnt]->name = $r['name'];
+				$cnt++;
+			}
 		}
 		return $array;
 	}
